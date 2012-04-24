@@ -1,0 +1,3 @@
+[submodule "vendor/dahlia"]
+	path = vendor/dahlia
+	url = https://github.com/it-agile/dahlia.git

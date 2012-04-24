@@ -15,4 +15,5 @@ that can be used to trigger a callback and respond to errors.
 
 Some commands also have shortcuts to make them easier to use.
 
-    conn.get("my-key", (val) -> print "#val");
+    conn.put("my-key", "Hello, World");
+    conn.get("my-key", (val) -> print "#val");	// "Hello, World!"
