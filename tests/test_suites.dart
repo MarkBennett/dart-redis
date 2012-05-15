@@ -6,29 +6,19 @@
 #import('../src/redis.dart');
 #import('dart:utf');
 
-class MockRedisConnection {
-	String hostname;
-	MockRedisConnection(this.hostname);
-}
-class MockRedisConnectionFactory {
-	MockRedisConnection build(hostname) {
-		return new MockRedisConnection(hostname);
-	}
-}
-
 testSuites() {
 	describe("Redis.connect", () {
-
+		Future<RedisConnection> future;
 		RedisConnection conn;
 
 		beforeEach(() {
-			Redis.connectionFactory = new MockRedisConnectionFactory();
-			conn = Redis.connect("localhost");
+			future = Redis.connect("localhost");
+			future.then((connection) => conn = connection );
 		});
 
-		it("should return a connection", () => expect(conn).to(not(beNull())));
+		it("should return a future", () => expect(future).to(not(beNull())));
 
-		it("should be connecting to the right hostname", () => expect(conn.hostname).to(equal("localhost")));
+		it("should set the hostname on the connection", () => expect(conn.hostname).to(equal("localhost")));
 	});
 
 	describe("RedisConnection", () {
@@ -58,8 +48,11 @@ testSuites() {
 
 	describe("RedisCoder", () {
 
-		it("should encode a message", () {
+		it("should encode a single argument message", () {
 			expect(RedisCoder.encode(["PING"])).to(beEquivalent(encodeUtf8("*1\r\n\$4\r\nPING\r\n")));
+		});
+		it("should encode a multi argment methd", () {
+			expect(RedisCoder.encode(["SET", "mykey", "myvalue"])).to(beEquivalent(encodeUtf8("*3\r\n\$3\r\nSET\r\n\$5\r\nmykey\r\n\$7\r\nmyvalue\r\n")));
 		});
 	});
 }
