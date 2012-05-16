@@ -13,4 +13,9 @@ class RedisCoder {
     });
     return encodeUtf8(buffer.toString());
   }
+  static List decode(List bytes) {
+    List message = new List();
+    
+    return ["SET", "mykey", "myvalue"];
+  }
 }

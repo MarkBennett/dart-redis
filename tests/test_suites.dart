@@ -6,44 +6,24 @@
 #import('../src/redis.dart');
 #import('dart:utf');
 
+// A typical session using the Redis client goes like this
+//
+// new RedisClient("localhost").connect.then((client) => client.ping());
 testSuites() {
-	describe("Redis.connect", () {
-		Future<RedisConnection> future;
-		RedisConnection conn;
+	describe("RedisClient", () {
+		Future<RedisClient> future;
+		RedisClient client;
+		var callback_client;
 
 		beforeEach(() {
-			future = Redis.connect("localhost");
-			future.then((connection) => conn = connection );
+			client = new RedisClient("localhost", new MockSocket());
+			future = client.connect;
+			future.then((client) => callback_client = client );
 		});
 
 		it("should return a future", () => expect(future).to(not(beNull())));
 
-		it("should set the hostname on the connection", () => expect(conn.hostname).to(equal("localhost")));
-	});
-
-	describe("RedisConnection", () {
-		RedisConnection conn;
-
-		beforeEach(() => conn = new RedisConnection("localhost"));
-
-		it('should be connected', () => expect(conn.connected).to(beTrue()));
-
-		describe("after disconnecting", () {
-			beforeEach(() => conn.close());
-
-			it('should not be connected', () => expect(conn.connected).to(beFalse()));
-		});
-		
-		describe("setting a key", () {
-			beforeEach(() => conn.set("test", "value1"));
-
-			it("should set the key in redis", () {
-			  var ret_val;
-			  
-			  conn.get("test", (val) => ret_val = val);
-	      expect(ret_val).to(equal("value1"));			  
-			});
-		});
+		it("should invoke the future with the client after connecting", () => expect(callback_client).to(equal(client)));
 	});
 
 	describe("RedisCoder", () {
@@ -51,8 +31,18 @@ testSuites() {
 		it("should encode a single argument message", () {
 			expect(RedisCoder.encode(["PING"])).to(beEquivalent(encodeUtf8("*1\r\n\$4\r\nPING\r\n")));
 		});
-		it("should encode a multi argment methd", () {
+		it("should encode a multi argument message", () {
 			expect(RedisCoder.encode(["SET", "mykey", "myvalue"])).to(beEquivalent(encodeUtf8("*3\r\n\$3\r\nSET\r\n\$5\r\nmykey\r\n\$7\r\nmyvalue\r\n")));
 		});
+		
+		it("should decode a multi argument message", () {
+		  expect(RedisCoder.decode(encodeUtf8("*3\r\n\$3\r\nSET\r\n\$5\r\nmykey\r\n\$7\r\nmyvalue\r\n"))).to(beEquivalent(["SET", "mykey", "myvalue"]));
+		});
 	});
+}
+
+class MockSocket {
+	void set onConnect(void callback()) {
+		callback();
+	}
 }
