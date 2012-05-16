@@ -5,6 +5,7 @@
 
 #import('../src/redis.dart');
 #import('dart:utf');
+#import('dart:io');
 
 // A typical session using the Redis client goes like this
 //
@@ -34,6 +35,13 @@ testSuites() {
 				client.cmd("SET", ["mykey", "\"hello\""]);
 				expect(client.coder.lastArgs).
 					to(beEquivalent([encodeUtf8("SET"), encodeUtf8("mykey"), encodeUtf8("\"hello\"")]));
+			});
+			it("should write the encoded arguments to the redis socket", () {
+				client.coder.encodeOutput = [1,2,3];
+
+				client.cmd("SET", ["arg1", "arg2", "arg3"]);
+
+				expect(client.socket.receivedBytes).to(beEquivalent([1, 2, 3]));
 			});
 		});
 	});
@@ -67,17 +75,31 @@ testSuites() {
 List encodeListAsUtf8(List<String> input) => input.map((elem) => encodeUtf8(elem));
 
 class MockSocket {
+	List<int> get receivedBytes() => _output.contents();
+
+	OutputStream _output;
+	OutputStream get outputStream() => _output;
+
+	MockSocket() {
+		_output = new ListOutputStream();
+	}
 	void set onConnect(void callback()) {
 		// Connect immediately
 		callback();
-	}
+	} 
 }
 
 class MockCoder {
+	List encodeOutput;
 	List lastArgs;
+
+	MockCoder() {
+		encodeOutput = new List();
+	}
 
 	List encode(args) {
 		lastArgs = args;
+		return encodeOutput;
 	}
 
 }

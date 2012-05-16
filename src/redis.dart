@@ -39,5 +39,6 @@ class RedisClient {
 
 		List<int> message_bytes = coder.encode(arg_bytes);
 
+		socket.outputStream.write(message_bytes);
 	}
 }
