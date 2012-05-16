@@ -12,9 +12,9 @@ class RedisClient {
 	Socket socket;
 	RedisCoder coder;
 
-	RedisClient(host, [Socket socket, RedisCoder coder]) {
+	RedisClient(String host, [int port = 6379, Socket socket, RedisCoder coder]) {
 		if (null == socket) {
-			socket = new Socket(host, 3000);
+			socket = new Socket(host, port);
 		}
 		this.socket = socket;
 
@@ -41,6 +41,8 @@ class RedisClient {
 
 		socket.outputStream.write(message_bytes);
 
+		while(socket.inputStream.available() == 0);
+
 		List response_bytes = new List();
 		List buffer = socket.inputStream.read();
 		while (null != buffer) {
@@ -48,6 +50,6 @@ class RedisClient {
 			buffer = socket.inputStream.read();
 		}
 
-		return coder.decode(response_bytes);
+		return coder.decode(response_bytes).map((arg) => decodeUtf8(arg));
 	}
 }

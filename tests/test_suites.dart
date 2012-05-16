@@ -27,6 +27,13 @@ testSuites() {
 		it("should invoke the future with the client after connecting", () => expect(callback_client).to(equal(client)));
 
 		describe(".cmd()", () {
+
+			beforeEach(() {
+				client = new RedisClient("localhost", socket: new MockSocket(), coder: new MockCoder());
+				future = client.connect;
+				future.then((client) => callback_client = client );
+			});
+
 			it("should allow users to send a command without arguments to the server", () {
 				client.cmd("PING");
 				expect(client.coder.lastArgsToEncode).to(beEquivalent([encodeUtf8("PING")]));
@@ -48,7 +55,7 @@ testSuites() {
 
 				List results = client.cmd("GET", ["mykey"]);
 
-				expect(results).to(beEquivalent([encodeUtf8("hello")]));
+				expect(results).to(beEquivalent(["hello"]));
 			});
 			it("should call the coder with the output of the socket", (){
 				client.socket.bytesToSend = encodeUtf8("\$5\r\nhello\r\n");
@@ -115,12 +122,15 @@ class MockSocket {
 
 	MockSocket() {
 		_output = new ListOutputStream();
-		bytesToSend = new List<int>();
+		bytesToSend = [43];
 	}
 	void set onConnect(void callback()) {
 		// Connect immediately
 		callback();
-	} 
+	}
+	int available() {
+		return 1;
+	}
 }
 
 class MockCoder {
