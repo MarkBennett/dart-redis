@@ -19,9 +19,9 @@ connected to the server.
 You can then issue commands against the client. Each command returns a Future
 that can be used to trigger a callback and respond to errors.
 
-    conn.cmd("get", ["my-key"]).then((reply) -> print "#{reply[0]}");
+    client.cmd("get", ["my-key"]).then((reply) -> print "#{reply[0]}");
 
 Some commands also have shortcuts to make them easier to use.
 
-    conn.set("my-key", "Hello, World");
-    conn.get("my-key", (val) -> print "#val");	// "Hello, World!"
+    client.set("my-key", "Hello, World");
+    client.get("my-key", (val) -> print "#val");	// "Hello, World!"
