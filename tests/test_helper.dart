@@ -9,19 +9,24 @@ class BeEquivalentMatcher implements Matcher {
 	const BeEquivalentMatcher(this.expected);
 
 	bool equivalent(expected, actual) {
-		if (expected.length == actual.length) {
-			for (var i = 0; i < expected.length; i++) {
-				if (expected[i] != actual[i]) {
-					try {
-						if (!equivalent(expected[i], actual[i])) {
-							return false;	
-						}
-					} catch (NoSuchMethodException e) {
-						return false;
-					}
-				}
-			}
+		if (expected == actual) {
 			return true;
+		} else {
+			try {
+				if (expected.length == actual.length) {
+					for (var i = 0; i < expected.length; i++) {
+						if (expected[i] != actual[i]) {
+							if (!equivalent(expected[i], actual[i])) {
+								return false;	
+							}
+						}
+					}
+					return true;
+				}
+
+			} catch (NoSuchMethodException e) {
+				return false;
+			}
 		}
 		return false;
 	}
