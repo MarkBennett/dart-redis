@@ -40,5 +40,14 @@ class RedisClient {
 		List<int> message_bytes = coder.encode(arg_bytes);
 
 		socket.outputStream.write(message_bytes);
+
+		List response_bytes = new List();
+		List buffer = socket.inputStream.read();
+		while (null != buffer) {
+			response_bytes.addAll(buffer);
+			buffer = socket.inputStream.read();
+		}
+
+		return coder.decode(response_bytes);
 	}
 }
