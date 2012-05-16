@@ -36,13 +36,18 @@ testSuites() {
 		});
 		
 		it("should decode a multi argument message", () {
-		  expect(RedisCoder.decode(encodeUtf8("*3\r\n\$3\r\nSET\r\n\$5\r\nmykey\r\n\$7\r\nmyvalue\r\n"))).to(beEquivalent(["SET", "mykey", "myvalue"]));
+		  expect(RedisCoder.decode(encodeUtf8("*3\r\n\$3\r\nSET\r\n\$5\r\nmykey\r\n\$7\r\nmyvalue\r\n"))).
+		 	to(beEquivalent([encodeUtf8("SET"), encodeUtf8("mykey"), encodeUtf8("myvalue")]));
+		});
+		it("should decode a single argument message", () {
+		  expect(RedisCoder.decode(encodeUtf8("*1\r\n\$4\r\nPONG\r\n"))).to(beEquivalent([encodeUtf8("PONG")]));
 		});
 	});
 }
 
 class MockSocket {
 	void set onConnect(void callback()) {
+		// Connect immediately
 		callback();
 	}
 }
