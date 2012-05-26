@@ -38,18 +38,24 @@ class RedisClient {
 		List arg_bytes = new_args.map((arg) => encodeUtf8(arg));
 
 		List<int> message_bytes = coder.encode(arg_bytes);
-
 		socket.outputStream.write(message_bytes);
 
-		while(socket.inputStream.available() == 0);
+    Completer<List> on_data_completer = new Completer<List>();
+    socket.onData = () {
+      if(socket.available() > 0) {
+        List response_bytes = new List();
+        List buffer = socket.inputStream.read();
+        while (null != buffer) {
+          response_bytes.addAll(buffer);
+          buffer = socket.inputStream.read();
+        }
 
-		List response_bytes = new List();
-		List buffer = socket.inputStream.read();
-		while (null != buffer) {
-			response_bytes.addAll(buffer);
-			buffer = socket.inputStream.read();
-		}
+        List<String> results =
+          coder.decode(response_bytes).map((arg) => decodeUtf8(arg));
+        on_data_completer.complete(results);
+      }
+    };
 
-		return coder.decode(response_bytes).map((arg) => decodeUtf8(arg));
+    return on_data_completer.future;
 	}
 }

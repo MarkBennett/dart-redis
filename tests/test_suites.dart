@@ -53,7 +53,8 @@ testSuites() {
 			it("should return the decoded results", () {
 				client.coder.decodedOutput = [encodeUtf8("hello")];
 
-				List results = client.cmd("GET", ["mykey"]);
+				List results;
+        client.cmd("GET", ["mykey"]).then((res) => results = res);
 
 				expect(results).to(beEquivalent(["hello"]));
 			});
@@ -128,6 +129,10 @@ class MockSocket {
 		// Connect immediately
 		callback();
 	}
+  void set onData(void callback()) {
+		// Connect immediately
+		callback();
+  }
 	int available() {
 		return 1;
 	}
