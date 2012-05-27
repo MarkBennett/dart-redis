@@ -13,10 +13,12 @@ on_connect(client) {
 	// Set then get a key
 	String key = "mykey";
 	print("Setting key value of, \"$key\" to, \"hello\".");
-	client.cmd("set", [key, "hello"]);
-	print("Retrieving key...");
-	String retrieved = client.cmd("get", [key])[0];
-	print("the value of \"$key\" was, \"$retrieved\"");
-
-	exit(0);
+	client.cmd("set", [key, "hello"]).then((res) {
+    print("Retrieving key...");
+    client.cmd("get", [key]).then((results) {
+      String retrieved = results[0];
+      print("the value of \"$key\" was, \"$retrieved\"");
+      exit(0);
+    });
+  });
 }
