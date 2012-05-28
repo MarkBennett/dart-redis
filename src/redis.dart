@@ -41,18 +41,9 @@ class RedisClient {
 		socket.outputStream.write(message_bytes);
 
     Completer<List> on_data_completer = new Completer<List>();
-    socket.onData = () {
-      List response_bytes = new List();
-      List buffer = new List(1000);
-
-      while (socket.readList(buffer, 0, 1000) > 0) {
-        response_bytes.addAll(buffer);
-      }
-
-      List<String> results =
-        coder.decode(response_bytes).map((arg) => decodeUtf8(arg));
+    coder.readMessage(socket.inputStream).then((results) {
       on_data_completer.complete(results);
-    };
+    });
 
     return on_data_completer.future;
 	}
