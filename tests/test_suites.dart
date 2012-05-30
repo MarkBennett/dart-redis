@@ -51,20 +51,12 @@ testSuites() {
 				expect(client.socket.receivedBytes).to(beEquivalent([1, 2, 3]));
 			});
 			it("should return the decoded results", () {
-				client.coder.decodedOutput = [encodeUtf8("hello")];
+				client.coder.decoded_output = [encodeUtf8("hello")];
 
 				List results;
         client.cmd("GET", ["mykey"]).then((res) => results = res);
 
-				expect(results).to(beEquivalent(["hello"]));
-			});
-			it("should call the coder with the output of the socket", (){
-				client.socket.bytesToSend = encodeUtf8("\$5\r\nhello\r\n");
-
-				client.cmd("PING");
-
-				expect(client.coder.lastBytesToDecode).
-					to(beEquivalent(encodeUtf8("\$5\r\nhello\r\n")));
+				expect(results).to(beEquivalent([encodeUtf8("hello")]));
 			});
 		});
 	});
@@ -140,14 +132,14 @@ class MockSocket {
 
 class MockCoder {
 	List<int> encodeOutput;
-	List decodedOutput;
+	List decoded_output;
 
 	List lastArgsToEncode;
 	List<int> lastBytesToDecode;
 
 	MockCoder() {
 		encodeOutput = new List<int>();
-		decodedOutput = new List();
+		decoded_output = new List();
 	}
 
 	List encode(args) {
@@ -156,7 +148,13 @@ class MockCoder {
 	}
 	List decode(bytes) {
 		lastBytesToDecode = bytes;
-		return decodedOutput;
+		return decoded_output;
 	}
+  Future<List> readMessage(InputStream stream) {
+    Completer on_message = new Completer();
 
+    on_message.complete(decoded_output);
+
+    return on_message.future;
+  } 
 }
