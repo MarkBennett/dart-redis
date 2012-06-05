@@ -108,6 +108,7 @@ class RedisCoder {
                   line_buffer.removeLast();
                   num_of_bytes_in_arg = Math.parseInt(decodeUtf8(line_buffer));
                   state = READING_ARG;
+                  line_buffer = [];
                 } else {
                   line_buffer.add(elem);
                 }
@@ -136,7 +137,7 @@ class RedisCoder {
                   // We just read the status
                   line_buffer.removeLast();
                   state = COMPLETE;
-                  on_message.complete([decodeUtf8(line_buffer)]);
+                  on_message.complete([line_buffer]);
                 } else {
                   line_buffer.add(elem);
                 }
