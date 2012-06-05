@@ -42,7 +42,8 @@ class RedisClient {
 
     Completer<List> on_data_completer = new Completer<List>();
     coder.readMessage(socket.inputStream).then((results) {
-      on_data_completer.complete(results);
+      List<int> decoded_results = results.map((result) => decodeUtf8(result) );
+      on_data_completer.complete(decoded_results);
     });
 
     return on_data_completer.future;

@@ -56,7 +56,7 @@ testSuites() {
 				List results;
         client.cmd("GET", ["mykey"]).then((res) => results = res);
 
-				expect(results).to(beEquivalent([encodeUtf8("hello")]));
+				expect(results).to(beEquivalent(["hello"]));
 			});
 		});
 	});

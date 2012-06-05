@@ -68,12 +68,10 @@ class RedisCoder {
     int num_of_bytes_in_arg = 0;
     
     stream.onData = () {
-      print("on Data!");
       while (state != COMPLETE) {
         buffer = stream.read(100);
         if (buffer != null) {
           buffer.forEach((elem) {
-            print("state = $state, elem = $elem");
             switch (state) {
               case (INITIAL):
                 switch (elem) {
@@ -95,15 +93,12 @@ class RedisCoder {
                 }
                 break;
               case (READING_NUM_OF_ARGS):
-                print("Reading number of args");
                 if (elem == LF_BYTE && line_buffer.last() == CR_BYTE) {
                   // We just finished reading the number of args
                   line_buffer.removeLast();
                   num_of_args = Math.parseInt(decodeUtf8(line_buffer));
-                  print("Reading $num_of_args args");
                   state = INITIAL;
                 } else {
-                  print("Read $elem");
                   line_buffer.add(elem);
                 }
                 break;
@@ -112,7 +107,6 @@ class RedisCoder {
                   // We just finished reading the number of bytes in the arg
                   line_buffer.removeLast();
                   num_of_bytes_in_arg = Math.parseInt(decodeUtf8(line_buffer));
-                  print("Read number of bytes in arg = $num_of_bytes_in_arg");
                   state = READING_ARG;
                 } else {
                   line_buffer.add(elem);
@@ -128,7 +122,6 @@ class RedisCoder {
                   if (num_of_args == 0) {
                     // This is the last arg
                     state = COMPLETE;
-                    print("Read args = $args");
                     on_message.complete(args);
                   } else {
                     // More args to go!
@@ -139,11 +132,9 @@ class RedisCoder {
                 }
                 break;
               case (READING_STATUS):
-                print("Reading status, elem = $elem");
                 if (elem == LF_BYTE && line_buffer.last() == CR_BYTE) {
                   // We just read the status
                   line_buffer.removeLast();
-                  print("read status!");
                   state = COMPLETE;
                   on_message.complete([decodeUtf8(line_buffer)]);
                 } else {
