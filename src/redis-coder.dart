@@ -66,10 +66,11 @@ class RedisCoder {
     int state = INITIAL;
     int num_of_args = 1;
     int num_of_bytes_in_arg = 0;
+    int bytes_to_read = 1;
     
     stream.onData = () {
       while (state != COMPLETE) {
-        buffer = stream.read(1);
+        buffer = stream.read(bytes_to_read);
         if (buffer != null) {
           buffer.forEach((elem) {
             switch (state) {
@@ -107,6 +108,7 @@ class RedisCoder {
                   // We just finished reading the number of bytes in the arg
                   line_buffer.removeLast();
                   num_of_bytes_in_arg = Math.parseInt(decodeUtf8(line_buffer));
+                  bytes_to_read = num_of_bytes_in_arg + 2;
                   state = READING_ARG;
                   line_buffer = [];
                 } else {
@@ -119,6 +121,7 @@ class RedisCoder {
                   line_buffer.removeLast();
                   args.add(line_buffer);
                   num_of_args--;
+                  bytes_to_read = 1;
 
                   if (num_of_args == 0) {
                     // This is the last arg
