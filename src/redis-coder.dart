@@ -69,7 +69,7 @@ class RedisCoder {
     
     stream.onData = () {
       while (state != COMPLETE) {
-        buffer = stream.read(100);
+        buffer = stream.read(1);
         if (buffer != null) {
           buffer.forEach((elem) {
             switch (state) {

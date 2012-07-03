@@ -91,6 +91,35 @@ testSuites() {
 			expect(coder.decode(encodeUtf8("\$5\r\nhello\r\n"))).
 				to(beEquivalent([encodeUtf8("hello")]));
 		});
+
+    describe("given an input stream with excess data", () {
+      List<int> input = encodeUtf8("*3\r\n\$3\r\nSET\r\n\$5\r\nmykey\r\n\$7\r\nmyvalue\r\n1234567890");
+      InputStream stream;
+
+      beforeEach(() {
+        stream = new MockListInputStream(input);
+      });
+      
+
+      it("should read a single message from an input stream", () {
+        List results;
+
+        coder.readMessage(stream).then((res) {
+          results = res;
+        });
+
+        expect(results).to(beEquivalent(encodeListAsUtf8(["SET", "mykey", "myvalue"])));
+      });
+
+      it("should not read beyond the single message in the stream", () {
+        coder.readMessage(stream);
+
+        List<int> message_stream =
+          encodeUtf8("*3\r\n\$3\r\nSET\r\n\$5\r\nmykey\r\n\$7\r\nmyvalue\r\n");
+        int expected_bytes_read = message_stream.length;
+        expect(stream.bytesRead).to(equal(expected_bytes_read));
+      });
+    }); 
 	});
 }
 
@@ -157,4 +186,33 @@ class MockCoder {
 
     return on_message.future;
   } 
+}
+
+class MockListInputStream {
+  List<int> bytes;
+  int _bytesRead;
+
+  int get bytesRead() => _bytesRead;
+
+  MockListInputStream(List<int> bytes) {
+    this.bytes = bytes;
+    _bytesRead = 0;
+  }
+
+  void set onData(void callback()) {
+    // Immediate invoke the callback
+    callback();
+  }
+
+  List<int> read(int max_bytes_to_read) {
+    if (max_bytes_to_read > bytes.length) {
+      max_bytes_to_read = bytes.length;
+    }
+    List<int> return_bytes = bytes.getRange(0, max_bytes_to_read);
+    _bytesRead += return_bytes.length;
+
+    bytes = bytes.getRange(return_bytes.length, bytes.length - return_bytes.length);
+
+    return return_bytes;
+  }
 }
